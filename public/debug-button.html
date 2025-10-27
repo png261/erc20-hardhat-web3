@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Button Hide/Show</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 50px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        .hidden {
+            display: none !important;
+        }
+        
+        .visible {
+            display: block;
+        }
+        .info-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .log {
+            background: #000;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐛 Debug Button Hide/Show</h1>
+        
+        <div id="buttonArea">
+            <button id="connectButton">Kết nối MetaMask</button>
+        </div>
+        
+        <div id="walletInfo" class="hidden">
+            <div class="info-box">
+                <strong>Đã kết nối!</strong>
+                <div id="walletAddress">0x...</div>
+            </div>
+        </div>
+        
+        <hr>
+        
+        <h3>Test Controls:</h3>
+        <button onclick="testConnect()">Test Connect (Giống như connectWallet)</button>
+        <button onclick="testHideButton()">Test Hide Button</button>
+        <button onclick="testShowInfo()">Test Show Info</button>
+        <button onclick="testReset()">Reset</button>
+        
+        <div id="log" class="log"></div>
+    </div>
+    
+    <script>
+        function log(message, type = 'info') {
+            const logEl = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#f00' : type === 'success' ? '#0f0' : '#0ff';
+            logEl.innerHTML += `<div style="color: ${color}">[${time}] ${message}</div>`;
+            logEl.scrollTop = logEl.scrollHeight;
+            console.log(message);
+        }
+        
+        function testConnect() {
+            log('=== SIMULATING CONNECT ===');
+            
+            log('Step 1: Getting elements...');
+            const connectBtn = document.getElementById('connectButton');
+            const walletInfo = document.getElementById('walletInfo');
+            const walletAddress = document.getElementById('walletAddress');
+            
+            if (!connectBtn) {
+                log('❌ Connect button not found!', 'error');
+                return;
+            }
+            log('✅ Connect button found');
+            
+            if (!walletInfo) {
+                log('❌ Wallet info not found!', 'error');
+                return;
+            }
+            log('✅ Wallet info found');
+            
+            log('Step 2: Setting wallet address...');
+            walletAddress.textContent = '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266';
+            log('✅ Address set');
+            
+            log('Step 3: Hiding connect button...');
+            connectBtn.style.display = 'none';
+            connectBtn.style.visibility = 'hidden';
+            log('✅ Button display set to none');
+            log('Button computed display: ' + window.getComputedStyle(connectBtn).display);
+            
+            log('Step 4: Showing wallet info...');
+            walletInfo.classList.remove('hidden');
+            walletInfo.classList.add('visible');
+            walletInfo.style.display = 'block';
+            log('✅ Removed hidden class, added visible, set display');
+            log('WalletInfo computed display: ' + window.getComputedStyle(walletInfo).display);
+            
+            log('=== CONNECT SIMULATION COMPLETE ===', 'success');
+        }
+        
+        function testHideButton() {
+            log('Hiding button...');
+            const btn = document.getElementById('connectButton');
+            if (btn) {
+                btn.style.display = 'none';
+                log('✅ Button hidden, display: ' + window.getComputedStyle(btn).display, 'success');
+            } else {
+                log('❌ Button not found', 'error');
+            }
+        }
+        
+        function testShowInfo() {
+            log('Showing wallet info...');
+            const info = document.getElementById('walletInfo');
+            if (info) {
+                info.classList.remove('hidden');
+                log('✅ Info shown, display: ' + window.getComputedStyle(info).display, 'success');
+            } else {
+                log('❌ Info not found', 'error');
+            }
+        }
+        
+        function testReset() {
+            log('Resetting...');
+            const btn = document.getElementById('connectButton');
+            const info = document.getElementById('walletInfo');
+            
+            if (btn) {
+                btn.style.display = '';
+            }
+            if (info) {
+                info.classList.add('hidden');
+            }
+            
+            log('✅ Reset complete', 'success');
+        }
+        
+        log('Debug page loaded', 'success');
+        log('Click "Test Connect" để simulate connectWallet()');
+    </script>
+</body>
+</html>

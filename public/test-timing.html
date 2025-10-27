@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Ethers Timing</title>
+    <style>
+        body { padding: 50px; font-family: Arial; }
+        .log { background: #000; color: #0f0; padding: 20px; font-family: monospace; margin: 20px 0; border-radius: 5px; }
+        button { padding: 15px 30px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Test Ethers.js Timing & Loading</h1>
+    <div id="status"></div>
+    <div class="log" id="log"></div>
+    <button onclick="testNow()">Test Ethers NOW</button>
+    
+    <!-- Load ethers SAME way as main app -->
+    <script 
+        src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js" 
+        type="text/javascript"
+        crossorigin="anonymous"
+        onload="log('✅ Script onload fired')"
+        onerror="log('❌ Script onerror fired')">
+    </script>
+    
+    <script>
+        function log(msg) {
+            const time = new Date().toLocaleTimeString();
+            const logEl = document.getElementById('log');
+            logEl.innerHTML += `[${time}] ${msg}<br>`;
+            console.log(msg);
+        }
+        
+        function testNow() {
+            log('=== TESTING NOW ===');
+            log('typeof ethers: ' + typeof ethers);
+            
+            if (typeof ethers !== 'undefined') {
+                log('✅ Ethers is defined!');
+                log('Version: ' + ethers.version);
+                
+                try {
+                    const test = ethers.utils.parseUnits('100', 18);
+                    log('✅ parseUnits works: ' + test.toString());
+                } catch (e) {
+                    log('❌ parseUnits error: ' + e.message);
+                }
+            } else {
+                log('❌ Ethers is NOT defined!');
+            }
+        }
+        
+        // Test 1: Immediate (in script body)
+        log('Test 1: Immediate check');
+        log('typeof ethers: ' + typeof ethers);
+        
+        // Test 2: setTimeout 0
+        setTimeout(() => {
+            log('Test 2: setTimeout 0');
+            log('typeof ethers: ' + typeof ethers);
+        }, 0);
+        
+        // Test 3: setTimeout 100
+        setTimeout(() => {
+            log('Test 3: setTimeout 100ms');
+            log('typeof ethers: ' + typeof ethers);
+        }, 100);
+        
+        // Test 4: DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', () => {
+            log('Test 4: DOMContentLoaded');
+            log('typeof ethers: ' + typeof ethers);
+        });
+        
+        // Test 5: window.load
+        window.addEventListener('load', () => {
+            log('Test 5: window.load');
+            log('typeof ethers: ' + typeof ethers);
+            
+            if (typeof ethers !== 'undefined') {
+                log('🎉 SUCCESS! Ethers loaded by window.load');
+                document.getElementById('status').innerHTML = 
+                    '<div style="background: #d4edda; padding: 20px; border-radius: 8px; color: #155724; margin: 20px 0;">' +
+                    '✅ Ethers.js đã load thành công!<br>' +
+                    'Version: ' + ethers.version +
+                    '</div>';
+            } else {
+                document.getElementById('status').innerHTML = 
+                    '<div style="background: #f8d7da; padding: 20px; border-radius: 8px; color: #721c24; margin: 20px 0;">' +
+                    '❌ Ethers.js KHÔNG load được!<br>' +
+                    'Kiểm tra kết nối internet và reload trang.' +
+                    '</div>';
+            }
+        });
+        
+        log('Script execution complete');
+    </script>
+</body>
+</html>

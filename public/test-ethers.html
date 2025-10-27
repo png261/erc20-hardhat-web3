@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Test Ethers.js Load</title>
+    <style>
+        body { padding: 50px; font-family: Arial; background: #f0f0f0; }
+        .status { padding: 20px; margin: 10px 0; border-radius: 8px; font-size: 18px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        button { padding: 15px 30px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Ethers.js Load</h1>
+    <div id="results"></div>
+    <button onclick="testEthers()">Test Ethers Functions</button>
+    
+    <!-- Try multiple CDN sources -->
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    
+    <script>
+        function addResult(message, isSuccess) {
+            const div = document.createElement('div');
+            div.className = 'status ' + (isSuccess ? 'success' : 'error');
+            div.innerHTML = message;
+            document.getElementById('results').appendChild(div);
+        }
+        
+        // Test immediately
+        console.log('Testing ethers load...');
+        
+        if (typeof ethers === 'undefined') {
+            addResult('❌ Ethers is NOT defined (immediate check)', false);
+        } else {
+            addResult('✅ Ethers is defined (immediate check)', true);
+            addResult('Ethers version: ' + (ethers.version || 'unknown'), true);
+        }
+        
+        // Test after delay
+        setTimeout(() => {
+            if (typeof ethers === 'undefined') {
+                addResult('❌ Ethers is NOT defined (after 100ms)', false);
+            } else {
+                addResult('✅ Ethers is defined (after 100ms)', true);
+            }
+        }, 100);
+        
+        // Test window.load
+        window.addEventListener('load', () => {
+            if (typeof ethers === 'undefined') {
+                addResult('❌ Ethers is NOT defined (window.load)', false);
+            } else {
+                addResult('✅ Ethers is defined (window.load)', true);
+            }
+        });
+        
+        function testEthers() {
+            try {
+                // Test basic functions
+                const isAddress = ethers.utils.isAddress('0x0000000000000000000000000000000000000000');
+                addResult('✅ ethers.utils.isAddress() works: ' + isAddress, true);
+                
+                const parsed = ethers.utils.parseUnits('100', 18);
+                addResult('✅ ethers.utils.parseUnits() works: ' + parsed.toString(), true);
+                
+                const formatted = ethers.utils.formatUnits(parsed, 18);
+                addResult('✅ ethers.utils.formatUnits() works: ' + formatted, true);
+                
+                addResult('🎉 All tests passed!', true);
+            } catch (error) {
+                addResult('❌ Error: ' + error.message, false);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERC20 Token Demo - Approve & TransferFrom</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 32px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        /* Wallet Section */
+        .wallet-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        #connectButton {
+            width: 100%;
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 700;
+            transition: all 0.3s;
+        }
+
+        #connectButton:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.3);
+        }
+
+        .wallet-info {
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .info-row {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+
+        .info-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 18px;
+            font-weight: 700;
+            font-family: monospace;
+            word-break: break-all;
+        }
+
+        .balance {
+            font-size: 32px !important;
+            font-weight: 800;
+            color: #ffd700;
+        }
+
+        .disconnect-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 15px;
+            transition: all 0.3s;
+        }
+
+        .disconnect-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #f0f0f0;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 15px 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            color: #667eea;
+            background: #f8f9fa;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s;
+            padding: 20px 0;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            font-family: monospace;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        input::placeholder {
+            color: #aaa;
+        }
+
+        button:not(.tab-btn):not(.disconnect-btn):not(#connectButton) {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        button:not(.tab-btn):not(.disconnect-btn):not(#connectButton):hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Alert Box */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: none;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert.success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .alert.error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .alert.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+
+        /* Info Box */
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            color: #1565C0;
+            font-size: 14px;
+        }
+
+        .info-box strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        /* Result Box */
+        .result-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 2px solid #667eea;
+            display: none;
+        }
+
+        .result-box.show {
+            display: block;
+        }
+
+        .result-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            font-family: monospace;
+            word-break: break-all;
+        }
+
+        /* Utility */
+        hr {
+            margin: 30px 0;
+            border: none;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-20 {
+            margin-top: 20px;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🪙 ERC20 Token Demo</h1>
+        <p class="subtitle">Approve & TransferFrom - Hardhat Local Network</p>
+
+        <!-- Wallet Connection Section -->
+        <div class="wallet-section">
+            <div id="connectArea">
+                <button id="connectButton">🦊 Kết nối MetaMask</button>
+            </div>
+
+            <div id="walletArea" style="display: none;">
+                <div class="info-row">
+                    <div class="info-label">Địa chỉ ví:</div>
+                    <div class="info-value" id="walletAddress">-</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Số dư token:</div>
+                    <div class="info-value balance" id="walletBalance">0 MTK</div>
+                </div>
+                <button class="disconnect-btn" onclick="disconnectWallet()">Ngắt kết nối</button>
+            </div>
+        </div>
+
+        <!-- Alert Messages -->
+        <div id="alertBox" class="alert"></div>
+
+        <!-- Main Content (Hidden until connected) -->
+        <div id="mainContent" style="display: none;">
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('approve')">✅ Approve</button>
+                <button class="tab-btn" onclick="switchTab('transfer')">💸 Transfer</button>
+                <button class="tab-btn" onclick="switchTab('transferFrom')">🔄 TransferFrom</button>
+                <button class="tab-btn" onclick="switchTab('check')">🔍 Kiểm tra</button>
+            </div>
+
+            <!-- Tab: Approve -->
+            <div id="tab-approve" class="tab-content active">
+                <h2>✅ Approve Tokens</h2>
+                <p style="color: #666; margin-bottom: 20px;">Cho phép một địa chỉ khác sử dụng token của bạn</p>
+
+                <div class="form-group">
+                    <label>Địa chỉ được phép (Spender):</label>
+                    <input type="text" id="approveSpender" placeholder="0x...">
+                </div>
+
+                <div class="form-group">
+                    <label>Số lượng token:</label>
+                    <input type="number" id="approveAmount" placeholder="100" min="0" step="any">
+                </div>
+
+                <button onclick="doApprove()">Approve</button>
+            </div>
+
+            <!-- Tab: Transfer -->
+            <div id="tab-transfer" class="tab-content">
+                <h2>💸 Transfer Tokens</h2>
+                <p style="color: #666; margin-bottom: 20px;">Chuyển token trực tiếp từ ví của bạn</p>
+
+                <div class="form-group">
+                    <label>Địa chỉ nhận (To):</label>
+                    <input type="text" id="transferTo" placeholder="0x...">
+                </div>
+
+                <div class="form-group">
+                    <label>Số lượng token:</label>
+                    <input type="number" id="transferAmount" placeholder="100" min="0" step="any">
+                </div>
+
+                <button onclick="doTransfer()">Transfer</button>
+            </div>
+
+            <!-- Tab: TransferFrom -->
+            <div id="tab-transferFrom" class="tab-content">
+                <h2>🔄 TransferFrom</h2>
+                
+                <div class="info-box">
+                    <strong>ℹ️ Lưu ý:</strong>
+                    Bạn cần có allowance từ owner address để thực hiện transferFrom.
+                    Owner phải approve cho bạn trước.
+                </div>
+
+                <div class="form-group">
+                    <label>Từ địa chỉ (Owner):</label>
+                    <input type="text" id="transferFromOwner" placeholder="0x...">
+                </div>
+
+                <div class="form-group">
+                    <label>Đến địa chỉ (To):</label>
+                    <input type="text" id="transferFromTo" placeholder="0x...">
+                </div>
+
+                <div class="form-group">
+                    <label>Số lượng token:</label>
+                    <input type="number" id="transferFromAmount" placeholder="100" min="0" step="any">
+                </div>
+
+                <button onclick="doTransferFrom()">TransferFrom</button>
+            </div>
+
+            <!-- Tab: Check -->
+            <div id="tab-check" class="tab-content">
+                <h2>🔍 Kiểm tra</h2>
+
+                <!-- Check Allowance -->
+                <h3>Kiểm tra Allowance</h3>
+                <div class="form-group">
+                    <label>Owner Address:</label>
+                    <input type="text" id="checkAllowanceOwner" placeholder="0x...">
+                </div>
+
+                <div class="form-group">
+                    <label>Spender Address:</label>
+                    <input type="text" id="checkAllowanceSpender" placeholder="0x...">
+                </div>
+
+                <button onclick="doCheckAllowance()">Kiểm tra Allowance</button>
+
+                <div id="allowanceResult" class="result-box">
+                    <strong>Allowance:</strong>
+                    <div class="result-value" id="allowanceValue">-</div>
+                </div>
+
+                <hr>
+
+                <!-- Check Balance -->
+                <h3>Kiểm tra Balance</h3>
+                <div class="form-group">
+                    <label>Address:</label>
+                    <input type="text" id="checkBalanceAddress" placeholder="0x...">
+                </div>
+
+                <button onclick="doCheckBalance()">Kiểm tra Balance</button>
+
+                <div id="balanceResult" class="result-box">
+                    <strong>Balance:</strong>
+                    <div class="result-value" id="balanceValue">-</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load ethers.js v5 from CDN -->
+    <script 
+        src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js" 
+        type="text/javascript"
+        crossorigin="anonymous"
+        onload="console.log('✅ Ethers.js loaded')"
+        onerror="console.error('❌ Failed to load ethers.js')">
+    </script>
+    
+    <!-- Main JavaScript - wait for ethers to load -->
+    <script>
+    (function() {
+        'use strict';
+        
+        // Wait for both DOM and ethers.js to be ready
+        function initApp() {
+            console.log('🚀 Initializing app...');
+            
+            // Check if ethers is loaded
+            if (typeof ethers === 'undefined') {
+                console.error('❌ Ethers.js is not loaded!');
+                alert('Lỗi: Không thể load thư viện Ethers.js. Vui lòng reload trang hoặc kiểm tra kết nối internet.');
+                return;
+            }
+            
+            console.log('✅ Ethers.js is ready');
+            console.log('✅ Ethers version:', ethers.version);
+            
+            // NOW define all functions that use ethers
+            console.log('✅ Ethers.js is ready');
+            console.log('✅ Ethers version:', ethers.version);
+            
+            // NOW define all functions that use ethers
+            
+        // Global variables
+        let provider, signer, contract, userAddress;
+        let contractAddress, contractABI;
+
+        // Show alert message
+        function showAlert(message, type = 'info') {
+            const alertBox = document.getElementById('alertBox');
+            if (!alertBox) return;
+            alertBox.textContent = message;
+            alertBox.className = `alert ${type} show`;
+            
+            setTimeout(() => {
+                alertBox.classList.remove('show');
+            }, 5000);
+        }
+
+        // Switch tabs
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active from all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById('tab-' + tabName).classList.add('active');
+            
+            // Set active button
+            event.target.classList.add('active');
+        }
+
+        // Load contract data
+        async function loadContractData() {
+            try {
+                console.log('Loading contract data...');
+                
+                // Load address
+                const addrRes = await fetch('./contract-address.json');
+                const addrData = await addrRes.json();
+                contractAddress = addrData.address;
+                console.log('Contract address:', contractAddress);
+                
+                // Load ABI
+                const abiRes = await fetch('./MyToken.json');
+                const abiData = await abiRes.json();
+                contractABI = abiData.abi;
+                console.log('ABI loaded');
+                
+                return true;
+            } catch (error) {
+                console.error('Error loading contract:', error);
+                showAlert('❌ Không thể load contract. Hãy deploy contract trước!', 'error');
+                return false;
+            }
+        }
+
+        // Connect wallet
+        async function connectWallet() {
+            try {
+                console.log('Connecting wallet...');
+                
+                // Check MetaMask
+                if (typeof window.ethereum === 'undefined') {
+                    showAlert('❌ Vui lòng cài đặt MetaMask!', 'error');
+                    window.open('https://metamask.io/download/', '_blank');
+                    return;
+                }
+
+                showAlert('Đang kết nối...', 'info');
+
+                // Load contract first
+                const loaded = await loadContractData();
+                if (!loaded) return;
+
+                // Request accounts
+                const accounts = await window.ethereum.request({ 
+                    method: 'eth_requestAccounts' 
+                });
+                
+                if (!accounts || accounts.length === 0) {
+                    showAlert('❌ Không có account nào được chọn', 'error');
+                    return;
+                }
+
+                userAddress = accounts[0];
+                console.log('Connected:', userAddress);
+
+                // Setup provider & signer
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+                contract = new ethers.Contract(contractAddress, contractABI, signer);
+
+                // Update UI
+                document.getElementById('connectArea').style.display = 'none';
+                document.getElementById('walletArea').style.display = 'block';
+                document.getElementById('mainContent').style.display = 'block';
+                document.getElementById('walletAddress').textContent = userAddress;
+
+                // Load balance
+                await updateBalance();
+
+                showAlert('✅ Kết nối thành công!', 'success');
+
+                // Listen for changes
+                window.ethereum.on('accountsChanged', handleAccountsChanged);
+                window.ethereum.on('chainChanged', () => location.reload());
+
+            } catch (error) {
+                console.error('Connection error:', error);
+                showAlert('❌ Lỗi: ' + error.message, 'error');
+            }
+        }
+
+        // Handle account change
+        function handleAccountsChanged(accounts) {
+            if (accounts.length === 0) {
+                disconnectWallet();
+            } else {
+                userAddress = accounts[0];
+                document.getElementById('walletAddress').textContent = userAddress;
+                updateBalance();
+            }
+        }
+
+        // Disconnect wallet
+        function disconnectWallet() {
+            location.reload();
+        }
+
+        // Update balance
+        async function updateBalance() {
+            try {
+                const balance = await contract.balanceOf(userAddress);
+                const decimals = await contract.decimals();
+                const formatted = ethers.utils.formatUnits(balance, decimals);
+                document.getElementById('walletBalance').textContent = formatted + ' MTK';
+            } catch (error) {
+                console.error('Error getting balance:', error);
+                document.getElementById('walletBalance').textContent = '0 MTK';
+            }
+        }
+
+        // Approve
+        async function doApprove() {
+            const spender = document.getElementById('approveSpender').value.trim();
+            const amount = document.getElementById('approveAmount').value;
+
+            if (!ethers.utils.isAddress(spender)) {
+                showAlert('❌ Địa chỉ spender không hợp lệ!', 'error');
+                return;
+            }
+
+            if (!amount || parseFloat(amount) <= 0) {
+                showAlert('❌ Số lượng không hợp lệ!', 'error');
+                return;
+            }
+
+            try {
+                showAlert('Đang gửi transaction...', 'info');
+                const decimals = await contract.decimals();
+                const amountWei = ethers.utils.parseUnits(amount, decimals);
+                
+                const tx = await contract.approve(spender, amountWei);
+                showAlert('Đang chờ confirmation...', 'info');
+                await tx.wait();
+                
+                showAlert(`✅ Approve thành công ${amount} MTK cho ${spender.substring(0, 10)}...`, 'success');
+                
+                // Clear inputs
+                document.getElementById('approveSpender').value = '';
+                document.getElementById('approveAmount').value = '';
+            } catch (error) {
+                console.error('Approve error:', error);
+                showAlert('❌ Lỗi: ' + (error.message || error), 'error');
+            }
+        }
+
+        // Transfer
+        async function doTransfer() {
+            const to = document.getElementById('transferTo').value.trim();
+            const amount = document.getElementById('transferAmount').value;
+
+            if (!ethers.utils.isAddress(to)) {
+                showAlert('❌ Địa chỉ không hợp lệ!', 'error');
+                return;
+            }
+
+            if (!amount || parseFloat(amount) <= 0) {
+                showAlert('❌ Số lượng không hợp lệ!', 'error');
+                return;
+            }
+
+            try {
+                showAlert('Đang gửi transaction...', 'info');
+                const decimals = await contract.decimals();
+                const amountWei = ethers.utils.parseUnits(amount, decimals);
+                
+                const tx = await contract.transfer(to, amountWei);
+                showAlert('Đang chờ confirmation...', 'info');
+                await tx.wait();
+                
+                showAlert(`✅ Chuyển thành công ${amount} MTK đến ${to.substring(0, 10)}...`, 'success');
+                await updateBalance();
+                
+                // Clear inputs
+                document.getElementById('transferTo').value = '';
+                document.getElementById('transferAmount').value = '';
+            } catch (error) {
+                console.error('Transfer error:', error);
+                showAlert('❌ Lỗi: ' + (error.message || error), 'error');
+            }
+        }
+
+        // TransferFrom
+        async function doTransferFrom() {
+            const from = document.getElementById('transferFromOwner').value.trim();
+            const to = document.getElementById('transferFromTo').value.trim();
+            const amount = document.getElementById('transferFromAmount').value;
+
+            if (!ethers.utils.isAddress(from)) {
+                showAlert('❌ Địa chỉ FROM không hợp lệ!', 'error');
+                return;
+            }
+
+            if (!ethers.utils.isAddress(to)) {
+                showAlert('❌ Địa chỉ TO không hợp lệ!', 'error');
+                return;
+            }
+
+            if (!amount || parseFloat(amount) <= 0) {
+                showAlert('❌ Số lượng không hợp lệ!', 'error');
+                return;
+            }
+
+            try {
+                showAlert('Đang kiểm tra allowance...', 'info');
+                const decimals = await contract.decimals();
+                const amountWei = ethers.utils.parseUnits(amount, decimals);
+                
+                // Check allowance
+                const allowance = await contract.allowance(from, userAddress);
+                if (allowance.lt(amountWei)) {
+                    showAlert(`❌ Allowance không đủ! Cần ${amount} MTK nhưng chỉ có ${ethers.utils.formatUnits(allowance, decimals)} MTK`, 'error');
+                    return;
+                }
+
+                showAlert('Đang gửi transaction...', 'info');
+                const tx = await contract.transferFrom(from, to, amountWei);
+                showAlert('Đang chờ confirmation...', 'info');
+                await tx.wait();
+                
+                showAlert(`✅ TransferFrom thành công ${amount} MTK từ ${from.substring(0, 10)}... đến ${to.substring(0, 10)}...`, 'success');
+                
+                // Clear inputs
+                document.getElementById('transferFromOwner').value = '';
+                document.getElementById('transferFromTo').value = '';
+                document.getElementById('transferFromAmount').value = '';
+            } catch (error) {
+                console.error('TransferFrom error:', error);
+                showAlert('❌ Lỗi: ' + (error.message || error), 'error');
+            }
+        }
+
+        // Check Allowance
+        async function doCheckAllowance() {
+            const owner = document.getElementById('checkAllowanceOwner').value.trim();
+            const spender = document.getElementById('checkAllowanceSpender').value.trim();
+
+            if (!ethers.utils.isAddress(owner) || !ethers.utils.isAddress(spender)) {
+                showAlert('❌ Địa chỉ không hợp lệ!', 'error');
+                return;
+            }
+
+            try {
+                const allowance = await contract.allowance(owner, spender);
+                const decimals = await contract.decimals();
+                const formatted = ethers.utils.formatUnits(allowance, decimals);
+                
+                document.getElementById('allowanceValue').textContent = formatted + ' MTK';
+                document.getElementById('allowanceResult').classList.add('show');
+                showAlert('✅ Đã kiểm tra allowance', 'success');
+            } catch (error) {
+                console.error('Check allowance error:', error);
+                showAlert('❌ Lỗi: ' + error.message, 'error');
+            }
+        }
+
+        // Check Balance
+        async function doCheckBalance() {
+            const address = document.getElementById('checkBalanceAddress').value.trim();
+
+            if (!ethers.utils.isAddress(address)) {
+                showAlert('❌ Địa chỉ không hợp lệ!', 'error');
+                return;
+            }
+
+            try {
+                const balance = await contract.balanceOf(address);
+                const decimals = await contract.decimals();
+                const formatted = ethers.utils.formatUnits(balance, decimals);
+                
+                document.getElementById('balanceValue').textContent = formatted + ' MTK';
+                document.getElementById('balanceResult').classList.add('show');
+                showAlert('✅ Đã kiểm tra balance', 'success');
+            } catch (error) {
+                console.error('Check balance error:', error);
+                showAlert('❌ Lỗi: ' + error.message, 'error');
+            }
+        }
+
+        // Setup connect button
+        const connectBtn = document.getElementById('connectButton');
+        if (connectBtn) {
+            connectBtn.addEventListener('click', connectWallet);
+            console.log('✅ Connect button handler attached');
+        } else {
+            console.error('❌ Connect button not found');
+        }
+
+        console.log('✅ App initialization complete');
+        console.log('MetaMask:', typeof window.ethereum !== 'undefined' ? '✅ Detected' : '❌ Not found');
+        
+        } // End of initApp function
+        
+        // Call initApp when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            // DOM already loaded
+            initApp();
+        }
+        
+    })(); // End of IIFE
+    </script>
+</body>
+</html>

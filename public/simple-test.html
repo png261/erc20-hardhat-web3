@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Simple Test - Button Hide</title>
+    <style>
+        body { padding: 50px; font-family: Arial; }
+        button { padding: 15px 30px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; margin: 10px; }
+        .hidden { display: none !important; }
+        .visible { display: block; }
+        .box { background: #f0f0f0; padding: 20px; margin: 20px 0; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <h1>Test Button Hide/Show</h1>
+    
+    <div class="box">
+        <h3>Scenario: Giống như connectWallet()</h3>
+        <button id="testBtn">Button sẽ biến mất</button>
+        <div id="testInfo" class="hidden">
+            <p style="color: green; font-weight: bold;">✅ Thông tin đã hiển thị!</p>
+        </div>
+    </div>
+    
+    <button onclick="runTest()">▶️ Chạy Test</button>
+    <button onclick="reset()">🔄 Reset</button>
+    
+    <div id="log" class="box" style="background: #000; color: #0f0; font-family: monospace; font-size: 12px;"></div>
+    
+    <script>
+        function log(msg) {
+            document.getElementById('log').innerHTML += msg + '<br>';
+            console.log(msg);
+        }
+        
+        function runTest() {
+            log('===== BẮT ĐẦU TEST =====');
+            
+            const btn = document.getElementById('testBtn');
+            const info = document.getElementById('testInfo');
+            
+            log('1. Element check...');
+            log('   Button: ' + (btn ? '✅ Found' : '❌ Not found'));
+            log('   Info: ' + (info ? '✅ Found' : '❌ Not found'));
+            
+            log('2. Before changes:');
+            log('   Button display: ' + window.getComputedStyle(btn).display);
+            log('   Info display: ' + window.getComputedStyle(info).display);
+            
+            log('3. Hiding button...');
+            btn.style.display = 'none';
+            btn.style.visibility = 'hidden';
+            log('   ✅ Done');
+            
+            log('4. Showing info...');
+            info.classList.remove('hidden');
+            info.classList.add('visible');
+            info.style.display = 'block';
+            log('   ✅ Done');
+            
+            log('5. After changes:');
+            log('   Button display: ' + window.getComputedStyle(btn).display);
+            log('   Info display: ' + window.getComputedStyle(info).display);
+            
+            log('===== TEST HOÀN THÀNH =====');
+            
+            if (window.getComputedStyle(btn).display === 'none' && 
+                window.getComputedStyle(info).display === 'block') {
+                log('✅✅✅ TEST PASSED! ✅✅✅');
+            } else {
+                log('❌❌❌ TEST FAILED! ❌❌❌');
+            }
+        }
+        
+        function reset() {
+            const btn = document.getElementById('testBtn');
+            const info = document.getElementById('testInfo');
+            btn.style.display = '';
+            btn.style.visibility = '';
+            info.classList.add('hidden');
+            info.classList.remove('visible');
+            info.style.display = '';
+            document.getElementById('log').innerHTML = '';
+            log('Reset complete. Click "Chạy Test" để test lại.');
+        }
+        
+        log('Test page loaded. Click "Chạy Test" để bắt đầu.');
+    </script>
+</body>
+</html>
